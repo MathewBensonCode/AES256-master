@@ -1,22 +1,27 @@
-#include <time.h>
+#include <ctime>
 #include <iostream>
-#include <ctype.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <limits.h>
+#include <cctype>
+#include <cstdio>
+#include <cstdint>
+#include <cstdlib>
+#include <cassert>
+#include <climits>
+#include <print>
 
-#define AES_BLOCKLEN 16 // Block length in bytes AES is 128b block only
-#define AES_keyExpSize 240
+enum {
+AES_BLOCKLEN = 16, // Block length in bytes AES is 128b block only
+AES_keyExpSize = 240
+};
 
 struct AES_ctx {
   uint8_t RoundKey[AES_keyExpSize];
 };
 
-#define Nb 4 // The number of columns comprising a state in AES
-#define Nk 8
-#define Nr 14
+enum {
+Nb = 4, // The number of columns comprising a state in AES
+Nk = 8,
+Nr = 14
+};
 
 // state - array holding the intermediate results during decryption.
 typedef uint8_t state_t[4][4];
@@ -70,7 +75,9 @@ uint8_t getSBoxInvert(uint8_t num) {
 
 // This function produces Nb(Nr+1) round keys. The round keys are used in each round to decrypt the states. 
 void KeyExpansion(uint8_t* RoundKey, const uint8_t* Key) {
-  unsigned i, j, k;
+  unsigned i = 0;
+  unsigned j = 0;
+  unsigned k = 0;
   uint8_t tempa[4]; // Used for the column/row operations
   
   // The first round key is the key itself.
@@ -129,18 +136,22 @@ void AES_init_ctx(AES_ctx* ctx, const uint8_t* key) {
 
 // This function adds the round key to state.
 // The round key is added to the state by an XOR function.
-void AddRoundKey(uint8_t round, state_t* state, uint8_t* RoundKey) {
-  for (uint8_t i = 0; i < 4; i++)
-    for (uint8_t j = 0; j < 4; j++)
+void AddRoundKey(uint8_t round, state_t* state, const uint8_t* RoundKey) {
+  for (uint8_t i = 0; i < 4; i++) {
+    for (uint8_t j = 0; j < 4; j++) {
       (*state)[i][j] ^= RoundKey[(round * Nb * 4) + (i * Nb) + j];
+}
+}
 }
 
 // The SubBytes Function Substitutes the values in the
 // state matrix with values in an S-box.
 void SubBytes(state_t* state) {
-  for (uint8_t i = 0; i < 4; i++)
-    for (uint8_t j = 0; j < 4; j++)
+  for (uint8_t i = 0; i < 4; i++) {
+    for (uint8_t j = 0; j < 4; j++) {
       (*state)[j][i] = getSBoxValue((*state)[j][i]);
+}
+}
 }
 
 // The ShiftRows() function shifts the rows in the state to the left.
@@ -176,7 +187,9 @@ uint8_t xtime(uint8_t x) {
 
 // MixColumns function mixes the columns of the state matrix
 void MixColumns(state_t* state) {
-  uint8_t Tmp, Tm, t;
+  uint8_t Tmp = 0;
+  uint8_t Tm = 0;
+  uint8_t t = 0;
   for (uint8_t i = 0; i < 4; i++) {  
     t   = (*state)[i][0];
     Tmp = (*state)[i][0] ^ (*state)[i][1] ^ (*state)[i][2] ^ (*state)[i][3] ;
@@ -196,7 +209,10 @@ uint8_t Multiply(uint8_t x, uint8_t y) {
 }
 
 void InvMixColumns(state_t* state) {
-  uint8_t a, b, c, d;
+  uint8_t a = 0;
+  uint8_t b = 0;
+  uint8_t c = 0;
+  uint8_t d = 0;
   for (int i = 0; i < 4; i++) { 
     a = (*state)[i][0];
     b = (*state)[i][1];
@@ -211,9 +227,11 @@ void InvMixColumns(state_t* state) {
 }
 
 void InvSubBytes(state_t* state) {
-  for (uint8_t i = 0; i < 4; i++)
-    for (uint8_t j = 0; j < 4; j++)
+  for (uint8_t i = 0; i < 4; i++) {
+    for (uint8_t j = 0; j < 4; j++) {
       (*state)[j][i] = getSBoxInvert((*state)[j][i]);
+}
+}
 }
 
 void InvShiftRows(state_t* state) {
@@ -295,145 +313,152 @@ void AES_ECB_decrypt(AES_ctx* ctx, uint8_t* buf) {
 }
 
 void AES_encrypt(const uint8_t* key, uint8_t* data, uint32_t size) {
-  AES_ctx ctx;
+  AES_ctx ctx{};
   AES_init_ctx(&ctx, key);
-  for (uint32_t i = 0; i < size / AES_BLOCKLEN; i++)
-    AES_ECB_encrypt(&ctx, data + i * AES_BLOCKLEN);
+  for (uint32_t i = 0; i < size / AES_BLOCKLEN; i++) {
+    AES_ECB_encrypt(&ctx, data + (i * AES_BLOCKLEN));
+}
 }
 
 void AES_decrypt(const uint8_t* key, uint8_t* data, uint32_t size) {
-  AES_ctx ctx;
+  AES_ctx ctx{};
   AES_init_ctx(&ctx, key);
-  for (uint32_t i = 0; i < size / AES_BLOCKLEN; i++)
-    AES_ECB_decrypt(&ctx, data + i * AES_BLOCKLEN);
+  for (uint32_t i = 0; i < size / AES_BLOCKLEN; i++) {
+    AES_ECB_decrypt(&ctx, data + (i * AES_BLOCKLEN));
+}
 }
 
 void PrintHex(const uint8_t* str, uint8_t len) {
   for (uint8_t i = 0; i < len; i++) {
-    if (i > 0 && i % 16 == 0)
-      printf("\n");
-    printf("%.2X ", str[i]);
+    if (i > 0 && i % 16 == 0) {
+      std::println("");
+}
+    std::print("{:.2X} ", str[i]);
   }
-  printf("\n");
+  std::println("");
 }
 
 int ctoh(char c) {
   assert(isxdigit(c));
   char str[2] = {c, '\0'};
-  return strtol(str, NULL, 16);
+  return strtol(str, nullptr, 16);
 }
 
 uint8_t chartohex(char c) {
   assert(isxdigit(c));
   uint8_t res = UCHAR_MAX;
-  if (c >= '0' && c <= '9')
+  if (c >= '0' && c <= '9') {
     res = c - '0';
-  else if (c >= 'a' && c <= 'f')
+  } else if (c >= 'a' && c <= 'f') {
     res = c - 'a' + 10;
-  else //if (c >= 'A' && c <= 'F')
+  } else { //if (c >= 'A' && c <= 'F')
     res = c - 'A' + 10;
+}
   return res;
 }
 
 void prompt(){
 	
 	std::cout<< "This program encrypts/decrypts files\n";
-  printf("using AES256 encryption with ECB mode of operation\n");
-  printf("and ANSI X9.23 padding method\n\n");
+  std::println("using AES256 encryption with ECB mode of operation");
+  std::println("and ANSI X9.23 padding method\n");
 
-  printf("The maximum supported file size is 4GB\n");
-  printf("Enough RAM is required to load the file\n");
-  printf("Encrypted files are 1 to 16 bytes larger than the original ones\n");
+  std::println("The maximum supported file size is 4GB");
+  std::println("Enough RAM is required to load the file");
+  std::println("Encrypted files are 1 to 16 bytes larger than the original ones");
 
-  printf("\nChoose an option:");
-  printf("\n\t1) Generate random key");
-  printf("\n\t2) Load key from file");
-  printf("\n\t3) Type key\n");
+  std::print("\nChoose an option:");
+  std::print("\n\t1) Generate random key");
+  std::print("\n\t2) Load key from file");
+  std::println("\n\t3) Type key");
 	
 }
 
 int main() {
    prompt();
 
-  uint32_t opt;
+  uint32_t opt = 0;
   scanf("%u", &opt);
   assert(opt == 1 || opt == 2 || opt == 3);
-  printf("\n");
+  std::println("");
   uint8_t key[32];
 
   if (opt == 1) {
-    printf("Loading Source of Entropy\t");
-    srand(time(NULL));
-    printf("COMPLETE\n");
-    printf("Generating Keys\t\t\t");
-    for (uint8_t i = 0; i < 32; i++)
-      key[i] = rand() % 256;
-    printf("COMPLETE\n");
+    std::print("Loading Source of Entropy\t");
+    srand(time(nullptr));
+    std::println("COMPLETE");
+    std::print("Generating Keys\t\t\t");
+    for (unsigned char & i : key) {
+      i = rand() % 256;
+}
+    std::println("COMPLETE");
   } 
   else if (opt == 2) {
   	
-    printf("Enter the name of the binary file containing the key\n");
+    std::println("Enter the name of the binary file containing the key");
     char keyf[32];
     scanf("%s", keyf);
-    FILE* kfile = fopen(keyf, "rb");
+    FILE* kfile = fopen(keyf, "rbe");
     fseek(kfile, 0, SEEK_END);
-    uint8_t ksize = ftell(kfile);
+    uint8_t const ksize = ftell(kfile);
     rewind(kfile);
     assert(ksize == 32);
     fread(key, 1, ksize, kfile);
     fclose(kfile);
-    printf("Key loaded from file %s\n", keyf);
+    std::println("Key loaded from file {}", keyf);
   } 
   else {
-    char digit1, digit2;
+    char digit1 = 0;
+    char digit2 = 0;
     
-    printf("Enter the key (64 hexadecimal digits):\n");
-    for (uint8_t i = 0; i < 32; i++) {
+    std::println("Enter the key (64 hexadecimal digits):");
+    for (unsigned char & i : key) {
       do {
         digit1 = getchar();
       } while (digit1 == ' ' || digit1 == '\n');
       do {
         digit2 = getchar();
       } while (digit2 == ' ' || digit2 == '\n');
-      key[i] = chartohex(digit1) * 16 + chartohex(digit2);
+      i = chartohex(digit1) * 16 + chartohex(digit2);
     }
-    printf("Key readed\n");
+    std::println("Key readed");
   }
 
-  printf("Key:\n");
+  std::println("Key:");
   PrintHex(key, 32);
-  printf("\n");
+  std::println("");
 
-  FILE* pFile = fopen("key.bin", "wb");
+  FILE* pFile = fopen("key.bin", "wbe");
   fwrite(key, sizeof(uint8_t), 32, pFile);
   fclose(pFile);
-  printf("Key has been stored in the file key.bin\n\n");
+  std::println("Key has been stored in the file key.bin\n");
   
   
 
-  printf("Enter name of the file to Encrypt/Decrypt:\n");
-  printf("WARNING: The file will be overwritten\n");
+  std::println("Enter name of the file to Encrypt/Decrypt:");
+  std::println("WARNING: The file will be overwritten");
   char fname[32];
   scanf("%s", fname);
 
-  FILE* file = fopen(fname, "rb+");
+  FILE* file = fopen(fname, "rb+e");
   fseek(file, 0, SEEK_END);
   uint32_t size = ftell(file);
 
-  printf("\nChoose an option:");
-  printf("\n\t1) Encrypt");
-  printf("\n\t2) Decrypt");
-  printf("\n");
+  std::print("\nChoose an option:");
+  std::print("\n\t1) Encrypt");
+  std::print("\n\t2) Decrypt");
+  std::println("");
   scanf("%u", &opt);
   assert(opt == 1 || opt == 2);
-  printf("\n");
+  std::println("");
 
   if (opt == 1) {
-    uint8_t len = AES_BLOCKLEN - size % AES_BLOCKLEN;
-    uint8_t* pad = new uint8_t[len];
+    uint8_t const len = AES_BLOCKLEN - (size % AES_BLOCKLEN);
+    auto* pad = new uint8_t[len];
 // ANSI X9.23
-    for (uint8_t i = 0; i < len - 1; i++)
+    for (uint8_t i = 0; i < len - 1; i++) {
       pad[i] = 0x00;
+}
     pad[len - 1] = len;
 // PKCS#7
 //    for (uint8_t i = 0; i < len; i++)
@@ -441,37 +466,37 @@ int main() {
     fwrite(pad, sizeof(uint8_t), len, file);
     delete[] pad;
     size += len;
-    printf("%d bytes have been added to the file to encrypt it\n", len);
+    std::println("{} bytes have been added to the file to encrypt it", len);
   }
   rewind(file);
-  uint8_t* input = new uint8_t[size];
+  auto* input = new uint8_t[size];
   fread(input, 1, size, file);
   fclose(file);
-  time_t start = time(NULL);
+  time_t const start = time(nullptr);
   
   if (opt == 1) {
-    printf("Estimated Encryption time: %d seconds\n", size / 50000000);
+    std::println("Estimated Encryption time: {} seconds", size / 50000000);
     AES_encrypt(key, input, size);
-    printf("Encrypted!\n");
+    std::println("Encrypted!");
   } 
   else {
-    printf("Estimated Decryption time: %d seconds\n", size / 20000000);
+    std::println("Estimated Decryption time: {} seconds", size / 20000000);
     AES_decrypt(key, input, size);
-    printf("Decrypted!\n");
+    std::println("Decrypted!");
   }
-  time_t end = time(NULL);
-  uint32_t diff = difftime(end, start);
-  printf("%d bytes have been encrypted / decrypted in %d seconds\n", size, diff);
+  time_t const end = time(nullptr);
+  uint32_t const diff = difftime(end, start);
+  std::println("{} bytes have been encrypted / decrypted in {} seconds", size, diff);
   
   if (opt == 2) {
-    uint32_t del = input[size - 1];
+    uint32_t const del = input[size - 1];
     size -= del;
-    printf("%d bytes have been removed from the decrypted file\n", del);
+    std::println("{} bytes have been removed from the decrypted file", del);
   }
-  pFile = fopen(fname, "wb");
+  pFile = fopen(fname, "wbe");
   fwrite(input, sizeof(uint8_t), size, pFile);
   fclose(pFile);
   delete[] input;
-  printf("File saved on disk\n");
+  std::println("File saved on disk");
   return 0;
 }
