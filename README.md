@@ -2,10 +2,19 @@
 Encrypt/Decrypt files using AES256 ECB ANSI X9.23
 
 EXAMPLE:
-```
-C:\Users\User\aes256>g++ -Wall -Werror -O3 AES256.cpp -o aes256
 
-C:\Users\User\aes256>aes256
+To get it running, Create a build directory outside this one and run the cmake generator to build in this directory. Refer to CMake documentation for more information on this.
+```mkdir ../build```
+```cmake -B ../build```
+
+To Build run
+```cmake --build ../```
+
+How To Run
+```
+
+.../AesCpp
+
 This program encrypts/decrypts files
 using AES256 encryption with ECB mode of operation
 and ANSI X9.23 padding method
